@@ -3,6 +3,8 @@ using JobWebApi.AppCommons;
 using JobWebApi.AppCores.Implementations;
 using JobWebApi.AppCores.Interfaces;
 using JobWebApi.AppDataAccess.DataContext;
+using JobWebApi.AppDataAccess.Repository.Implementations;
+using JobWebApi.AppDataAccess.Repository.Interfaces;
 using JobWebApi.AppModels.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -95,12 +97,19 @@ namespace JobWebApi
                 option.SignIn.RequireConfirmedEmail = true;
                 option.Password.RequiredLength = 5;
                 option.Password.RequireNonAlphanumeric = false;
+                //option.Lockout.AllowedForNewUsers = true;
             }).AddEntityFrameworkStores<JobDbContext>().AddDefaultTokenProviders();
             services.AddAutoMapper();
             services.AddTransient<SeedClass>();
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<ICVUpload, CvUpLoadRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IIndustryRepository, IndustryRepository>();
+            services.AddScoped<IJobRepository, JobRepository>();
+            services.AddScoped<IJobApplicationRepo, JobApplicationRepository>();
+            services.AddScoped<IUploadService, UploadService>();
 
         }
 

@@ -5,8 +5,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20211225092707_FirstMigration.cs" />
+    <Compile Remove="Migrations\20211225092707_FirstMigration.Designer.cs" />
+    <Compile Remove="Migrations\20211227221120_secondMigration.cs" />
+    <Compile Remove="Migrations\20211227221120_secondMigration.Designer.cs" />
+    <Compile Remove="Migrations\20211228021411_thirdmigration.cs" />
+    <Compile Remove="Migrations\20211228021411_thirdmigration.Designer.cs" />
+    <Compile Remove="Migrations\20211228022520_thirdmigration.cs" />
+    <Compile Remove="Migrations\20211228022520_thirdmigration.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="AppCommons\" />
-    <Folder Include="AppModels\DTOs\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
   <ItemGroup>

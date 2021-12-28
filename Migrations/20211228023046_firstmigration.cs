@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace JobWebApi.Migrations
 {
-    public partial class FirstMigration : Migration
+    public partial class firstmigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -42,7 +42,8 @@ namespace JobWebApi.Migrations
                     AccessFailedCount = table.Column<int>(nullable: false),
                     FirstName = table.Column<string>(nullable: true),
                     LastName = table.Column<string>(nullable: true),
-                    IsActive = table.Column<bool>(nullable: false)
+                    IsActive = table.Column<bool>(nullable: false),
+                    CvUploadId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -187,19 +188,22 @@ namespace JobWebApi.Migrations
                 name: "CvUpload",
                 columns: table => new
                 {
-                    AppUserId = table.Column<string>(nullable: false),
+                    Id = table.Column<string>(nullable: false),
+                    CreatedAt = table.Column<string>(nullable: true),
+                    UpdatedAt = table.Column<string>(nullable: true),
                     Url = table.Column<string>(nullable: true),
-                    PublicId = table.Column<string>(nullable: true)
+                    PublicId = table.Column<string>(nullable: true),
+                    AppUserId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CvUpload", x => x.AppUserId);
+                    table.PrimaryKey("PK_CvUpload", x => x.Id);
                     table.ForeignKey(
                         name: "FK_CvUpload_AspNetUsers_AppUserId",
                         column: x => x.AppUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -302,6 +306,13 @@ namespace JobWebApi.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CvUpload_AppUserId",
+                table: "CvUpload",
+                column: "AppUserId",
+                unique: true,
+                filter: "[AppUserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Job_CategoryId",

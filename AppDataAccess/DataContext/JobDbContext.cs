@@ -19,6 +19,8 @@ namespace JobWebApi.AppDataAccess.DataContext
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<AppUser>().HasOne(x => x.CvUpload).WithOne(c => c.AppUser).HasForeignKey<AppUser>(x => x.CvUploadId);
+            builder.Entity<CvUpload>().HasOne(x => x.AppUser).WithOne(x => x.CvUpload).HasForeignKey<CvUpload>(x => x.AppUserId);
             builder.Entity<JobApplication>().HasOne(x => x.Job).WithMany(c => c.AppliedJobs).HasForeignKey(d => d.JobId);
             builder.Entity<JobApplication>().HasOne(x => x.AppUser).WithMany(c => c.AppliedJobs).HasForeignKey(d => d.AppUserId);
             builder.Entity<Job>().Property(x => x.MinimumSalary).HasColumnType("decimal(18,4)");

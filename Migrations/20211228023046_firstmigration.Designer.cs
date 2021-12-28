@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobWebApi.Migrations
 {
     [DbContext(typeof(JobDbContext))]
-    [Migration("20211225092707_FirstMigration")]
-    partial class FirstMigration
+    [Migration("20211228023046_firstmigration")]
+    partial class firstmigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -31,6 +31,9 @@ namespace JobWebApi.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CvUploadId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -116,16 +119,29 @@ namespace JobWebApi.Migrations
 
             modelBuilder.Entity("JobWebApi.AppModels.Models.CvUpload", b =>
                 {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("AppUserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("CreatedAt")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PublicId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedAt")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Url")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("AppUserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId")
+                        .IsUnique()
+                        .HasFilter("[AppUserId] IS NOT NULL");
 
                     b.ToTable("CvUpload");
                 });
@@ -363,9 +379,7 @@ namespace JobWebApi.Migrations
                 {
                     b.HasOne("JobWebApi.AppModels.Models.AppUser", "AppUser")
                         .WithOne("CvUpload")
-                        .HasForeignKey("JobWebApi.AppModels.Models.CvUpload", "AppUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("JobWebApi.AppModels.Models.CvUpload", "AppUserId");
                 });
 
             modelBuilder.Entity("JobWebApi.AppModels.Models.Job", b =>

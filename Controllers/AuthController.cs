@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace JobWebApi.Controllers
 {
-    public class AuthController : Controller
+    
+    [ApiController]
+    public class AuthController : ControllerBase
     {
 
         private readonly UserManager<AppUser> _userMgr;
@@ -26,7 +28,7 @@ namespace JobWebApi.Controllers
             var user = await _userMgr.FindByEmailAsync(model.email);
             if (user == null)
             {
-                ModelState.AddModelError("Invalid", "Credentials provided bu the user is invalid");
+                ModelState.AddModelError("Invalid", "Credentials provided by the user is invalid");
                 return BadRequest(Utilities.BuildResponse<object>(false, "Invalid credentials", ModelState, null));
             }
 
@@ -37,8 +39,13 @@ namespace JobWebApi.Controllers
 
                 if (!res.status)
                 {
-                    ModelState.AddModelError("Invalid", "Credentials provided bu the user is invalid");
+                    ModelState.AddModelError("Invalid", "Credentials provided by the user is invalid");
                     return BadRequest(Utilities.BuildResponse<object>(false, "Invalid credentials", ModelState, null));
+                }
+                if (user.IsActive == false)
+                {
+                    ModelState.AddModelError("Access Denied", "Account Deactivated Contact Admin");
+                    return BadRequest(Utilities.BuildResponse<object>(false, "Account Deactivated", ModelState, null));
                 }
 
                 return Ok(Utilities.BuildResponse(true, "Login is sucessful!", null, res));

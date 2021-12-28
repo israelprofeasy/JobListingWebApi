@@ -15,6 +15,8 @@ namespace JobWebApi.AppCommons
                .ForMember(d => d.FullName, x => x.MapFrom(x => $"{x.FirstName} {x.LastName}"));
 
             CreateMap<AppUser, UserToReturnDto>();
+            CreateMap<UploadDto, CvUpload>();
+            CreateMap<CvUpload, CvUploadReturnedDto>();
         }
     }
 }

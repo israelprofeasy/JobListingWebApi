@@ -18,7 +18,10 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
         }
         public async Task<bool> Add<T>(T entity)
         {
-            await _ctx.AddAsync(entity);
+            // _ctx.CvUpload.AsNoTracking();
+            //_ctx.Entry(entity).State = EntityState.Detached;
+            var cv = entity as CvUpload;
+             _ctx.CvUpload.Add(cv);
             return await SaveChanges();
         }
 
@@ -37,7 +40,10 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
         {
             return await _ctx.CvUpload.Where(x => x.AppUserId == userId).FirstOrDefaultAsync();
         }
-
+        public async Task<CvUpload> GetCvByPublicId(string PublicId)
+        {
+            return await _ctx.CvUpload.Include(x => x.AppUser).FirstOrDefaultAsync(x => x.PublicId == PublicId);
+        }
         public async Task<int> RowCount()
         {
             return await _ctx.CvUpload.CountAsync();
