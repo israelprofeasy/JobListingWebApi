@@ -1,19 +1,21 @@
-﻿using JobWebApi.AppModels.Enums;
-using System;
+﻿using System;
 
 namespace JobWebApi.AppModels.DTOs
 {
-    public class JobPreviewDto
+    public class JobDetailReturnedDto
     {
         public string Id { get; set; }
         public string JobTitle { get; set; }
         public string Company { get; set; }
-        public Locations Location { get; set; }
-
-       // public string JobNature { get; set; }
-        public JobNature JobNature { get; set; }
+        public string Industry { get; set; }
+        public string Category { get; set; }
+        public string Location { get; set; }
+        public string JobNature { get; set; }
+        public string JobDescription { get; set; }
         public DateTime Deadline { get; set; }
         public DateTime DateCreated { get; set; }
         public string SalaryRange { get; set; }
+        
     }
 }
+

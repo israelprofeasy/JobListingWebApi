@@ -1,4 +1,5 @@
-﻿using JobWebApi.AppModels.Enums;
+﻿using JobWebApi.AppModels.DTOs;
+using JobWebApi.AppModels.Enums;
 using JobWebApi.AppModels.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,5 +17,6 @@ namespace JobWebApi.AppDataAccess.Repository.Interfaces
         public Task<IEnumerable<Job>> GetJobsBySalaryRange(decimal minimum, decimal maximum);
         public Task<IEnumerable<Job>> GetJobsByName(string name);
         public Task<Job> GetJobById(string id);
+        public Task<bool> JobExists(string jobTitle, string company);
     }
 }

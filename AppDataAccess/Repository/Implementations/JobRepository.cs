@@ -1,5 +1,6 @@
 ﻿using JobWebApi.AppDataAccess.DataContext;
 using JobWebApi.AppDataAccess.Repository.Interfaces;
+using JobWebApi.AppModels.DTOs;
 using JobWebApi.AppModels.Enums;
 using JobWebApi.AppModels.Models;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +68,11 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
         public async Task<IEnumerable<Job>> GetJobsBySalaryRange(decimal minimum, decimal maximum)
         {
             return await _ctx.Job.Where(x => x.MinimumSalary >= minimum && x.MaximumSalary <= maximum).OrderBy(x => x.MinimumSalary).ToListAsync(); 
+        }
+
+        public async Task<bool> JobExists(string jobTitle, string company)
+        {
+            return await _ctx.Job.AnyAsync(x => x.JobTitle == jobTitle && x.Company == company);
         }
 
         public async Task<int> RowCount()
