@@ -35,12 +35,16 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
 
         public async Task<Category> GetCategoryById(string id)
         {
-            return await _ctx.Category.Where(x => x.Id == id).FirstOrDefaultAsync();
+            var res = await _ctx.Category.Where(x => x.Id == id).FirstOrDefaultAsync();
+           if(res != null)
+            _ctx.Entry(res).State = EntityState.Detached;
+            return res;
         }
 
         public async Task<IEnumerable<Category>> GetCategories(string name)
         {
-            return await _ctx.Category.Where(x => x.Name.Contains(name)).ToListAsync();
+            return 
+                await _ctx.Category.Where(x => x.Name.Contains(name)).ToListAsync();
         }
 
         public async Task<int> RowCount()

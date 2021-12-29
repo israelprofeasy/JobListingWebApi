@@ -110,6 +110,11 @@ namespace JobWebApi
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<IJobApplicationRepo, JobApplicationRepository>();
             services.AddScoped<IUploadService, UploadService>();
+            services.AddScoped<IJobServices, JobServices>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IIndustryService, IndustryServices>();
+            services.AddScoped<IApplication, ApplicationServices>();
+
 
         }
 

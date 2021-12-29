@@ -33,9 +33,17 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
             return await _ctx.Industry.ToListAsync();
         }
 
+        public async Task<IEnumerable<Industry>> GetIndustries(string name)
+        {
+            return await _ctx.Industry.Where(x => x.Name.Contains(name)).ToListAsync();
+        }
+
         public async Task<Industry> GetIndustryById(string id)
         {
-            return await _ctx.Industry.Where(x => x.Id == id).FirstOrDefaultAsync();
+            var res = await _ctx.Industry.Where(x => x.Id == id).FirstOrDefaultAsync();
+            if (res != null)
+                _ctx.Entry(res).State = EntityState.Detached;
+            return res;
         }
 
         public async Task<Industry> GetIndustryByName(string name)

@@ -9,10 +9,10 @@ namespace JobWebApi.AppCores.Interfaces
     {
         Task<bool> RemoveIndustry(string id);
         Task<bool> UpdateIndustry(string id, IndustryDto industry);
-        Task<bool> AddIndustry(IndustryDto industry);
-        Task<List<Industry>> GetAllIndustry();
-        Task<List<Industry>> GetCategories(string name);
-        Task<Industry> GetIndustryById(string id);
-        Task<Industry> GetIndustryByName(string name);
+        Task<IndustryReturnedDto> AddIndustry(IndustryDto industry);
+        Task<List<IndustryReturnedDto>> GetAllIndustry();
+        Task<List<IndustryReturnedDto>> GetIndustries(string name);
+        Task<IndustryReturnedDto> GetIndustryById(string id);
+        Task<IndustryReturnedDto> GetIndustryByName(string name);
     }
 }

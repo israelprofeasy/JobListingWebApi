@@ -2,6 +2,7 @@
 using JobWebApi.AppModels.DTOs;
 using JobWebApi.AppModels.Models;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,18 +23,25 @@ namespace JobWebApi.AppCores.Implementations
         public async Task<LoginCredDto> Login(string email, string password, bool rememberMe)
         {
             var user = await _userManager.FindByEmailAsync(email);
+            var token = "";
 
-            var res = await _signinManager.PasswordSignInAsync(user, password, rememberMe, false);
-
-            if (!res.Succeeded)
+            try
             {
-                return new LoginCredDto { status = false };
+               var res = await _signinManager.PasswordSignInAsync(user, password, rememberMe, false);
+
+                if (!res.Succeeded)
+                {
+                    return new LoginCredDto { status = false };
+                }
+
+                // get jwt token
+                var userRoles = await _userManager.GetRolesAsync(user);
+                token = _jWTService.GenerateToken(user, userRoles.ToList());
             }
-
-            // get jwt token
-            var userRoles = await _userManager.GetRolesAsync(user);
-            var token = _jWTService.GenerateToken(user, userRoles.ToList());
-
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
 
             return new LoginCredDto { status = true, Id = user.Id, token = token };
         }

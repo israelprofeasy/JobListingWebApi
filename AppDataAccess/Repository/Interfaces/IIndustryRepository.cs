@@ -10,5 +10,6 @@ namespace JobWebApi.AppDataAccess.Repository.Interfaces
         Task<Industry> GetIndustryById(string id);
         Task<IEnumerable<Industry>> GetAll();
         Task<Industry> GetIndustryByName(string name);
+        Task<IEnumerable<Industry>> GetIndustries(string name);
     }
 }

@@ -16,12 +16,12 @@ namespace JobWebApi.AppModels.DTOs
         public string Company { get; set; }
 
         [Required]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]
-        public string Industry { get; set; }
+      //  [StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]
+        public string IndustryId { get; set; }
 
         [Required]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]
-        public string Category { get; set; }
+        //[StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]
+        public string CategoryId { get; set; }
 
         [Required]
         //[StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]

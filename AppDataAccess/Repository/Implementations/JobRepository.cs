@@ -32,7 +32,10 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
 
         public async Task<Job> GetJobById(string id)
         {
-            return await _ctx.Job.Where(x => x.Id == id).FirstOrDefaultAsync();
+            var res =await _ctx.Job.Where(x => x.Id == id).Include(x=>x.Category).Include(x => x.Industry).FirstOrDefaultAsync();
+            if (res != null)
+                _ctx.Entry(res).State = EntityState.Detached;
+            return res;
         }
 
         public async Task<IEnumerable<Job>> GetJobs()

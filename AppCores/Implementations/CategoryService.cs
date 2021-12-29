@@ -3,6 +3,7 @@ using JobWebApi.AppCores.Interfaces;
 using JobWebApi.AppDataAccess.Repository.Interfaces;
 using JobWebApi.AppModels.DTOs;
 using JobWebApi.AppModels.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -18,39 +19,156 @@ namespace JobWebApi.AppCores.Implementations
             _categoryRepo = categoryRepository;
             _mapper = mapper;
         }
-        public Task<bool> AddCategory(CategoryDto category)
+        public async Task<CategoryReturnDto> AddCategory(CategoryDto category)
         {
-            throw new System.NotImplementedException();
+            var check = await _categoryRepo.GetCategoryByName(category.Name);
+            //var res = false;
+            if (check == null)
+            {
+            
+            var newCategory = _mapper.Map<Category>(category);
+                try
+                {
+                    var addCategory = await _categoryRepo.Add(newCategory);
+                    if (addCategory.Equals(true))
+                    {
+                        var res = _mapper.Map<CategoryReturnDto>(newCategory);
+                        return res;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+                
+
+            }
+            return null;
+           
+            
         }
 
-        public Task<List<Category>> GetAllCategory()
+        public async Task<List<CategoryReturnDto>> GetAllCategory()
         {
-            throw new System.NotImplementedException();
+            var listofCategory = new List<CategoryReturnDto>();
+            try
+            {
+                var res = await _categoryRepo.GetAll();
+                foreach (var item in res)
+                {
+                    listofCategory.Add(_mapper.Map<CategoryReturnDto>(item));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return listofCategory;
         }
 
-        public Task<List<Category>> GetCategories(string name)
+        public async Task<List<CategoryReturnDto>> GetCategories(string name)
         {
-            throw new System.NotImplementedException();
+
+            var listofCategory = new List<CategoryReturnDto>();
+            try
+            {
+                var res = await _categoryRepo.GetCategories(name);
+                foreach (var item in res)
+                {
+                    listofCategory.Add(_mapper.Map<CategoryReturnDto>(item));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return listofCategory;
         }
 
-        public Task<Category> GetCategoryById(string id)
-        {
-            throw new System.NotImplementedException();
+        public async Task<CategoryReturnDto> GetCategoryById(string id)
+        {  
+            try
+            {
+                var res = await _categoryRepo.GetCategoryById(id);
+                if(res != null)
+                {
+                    return _mapper.Map<CategoryReturnDto>(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return null;
         }
 
-        public Task<Category> GetCategoryByName(string name)
+        public async Task<CategoryReturnDto> GetCategoryByName(string name)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                var res = await _categoryRepo.GetCategoryByName(name);
+                if (res != null)
+                {
+                    return _mapper.Map<CategoryReturnDto>(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return null;
         }
 
-        public Task<bool> RemoveCategory(string id)
+        public async Task<bool> RemoveCategory(string id)
         {
-            throw new System.NotImplementedException();
+            var category = await _categoryRepo.GetCategoryById(id);
+            if(category != null)
+            {
+                try
+                {
+                    var res = await _categoryRepo.Delete(category);
+                    if (res.Equals(true))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            }
+            return false;
         }
 
-        public Task<bool> UpdateCategory(string id, CategoryDto category)
+        public async Task<bool> UpdateCategory(string id, CategoryDto category)
         {
-            throw new System.NotImplementedException();
+            var result = await _categoryRepo.GetCategoryById(id);
+            //var result = "";
+            var success = false;
+            if (result != null)
+            {
+                //result.;
+                
+                var updatedCategory = _mapper.Map<Category>(category);  
+                updatedCategory.Id = id;
+                try
+                {
+                    var res = await _categoryRepo.Update(updatedCategory);
+                    if (res.Equals(true))
+                    {
+                        success = true;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+                return success;
+
+
+            }
+            return success;
+
         }
     }
 }

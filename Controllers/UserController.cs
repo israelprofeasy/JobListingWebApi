@@ -232,12 +232,13 @@ namespace JobWebApi.Controllers
         public async Task<IActionResult> GetUserById(string id)
         {
             // map data from db to dto to reshape it and remove null fields
-            var UserToReturn = new UserToReturnDto();
+            var UserToReturn = new UserDetailReturnedDto();
             //var user = await _userService.GetUser(email);
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _userManager.Users.Where(x => x.Id == id).Include(x => x.CvUpload).FirstOrDefaultAsync();//FindByIdAsync(id);
+            
             if (user != null)
             {
-                UserToReturn = _mapper.Map<UserToReturnDto>(user);
+                UserToReturn = _mapper.Map<UserDetailReturnedDto>(user);
 
                 var res = Utilities.BuildResponse(true, "User details", null, UserToReturn);
                 return Ok(res);

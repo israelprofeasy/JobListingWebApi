@@ -3,6 +3,7 @@ using JobWebApi.AppDataAccess.Repository.Interfaces;
 using JobWebApi.AppModels.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace JobWebApi.AppDataAccess.Repository.Implementations
@@ -27,9 +28,10 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
             return await SaveChanges();
         }
 
-        public Task<IEnumerable<AppUser>> JobApplications(string JobId)
+        public async Task<IEnumerable<AppUser>> JobApplications(string jobId)
         {
-            throw new System.NotImplementedException();
+            var res = await _ctx.JobApplication.Where(x => x.JobId == jobId).Include(x => x.AppUser).Select(x=>x.AppUser).ToListAsync();
+            return res;
         }
 
         public async Task<int> RowCount()
@@ -47,9 +49,10 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Job>> UserApplications(string userId)
+        public async Task<IEnumerable<Job>> UserApplications(string userId)
         {
-            throw new System.NotImplementedException();
+            var res = await _ctx.JobApplication.Where(x => x.AppUserId == userId).Include(x => x.Job).Select(x => x.Job).ToListAsync();
+            return res;
         }
     }
 }

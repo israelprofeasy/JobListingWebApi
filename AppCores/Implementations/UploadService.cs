@@ -34,53 +34,75 @@ namespace JobWebApi.AppCores.Implementations
 
         public async Task<Tuple<bool, UploadDto>> AddCvAsync(UploadDto model, string userId)
         {
-            var user = await _userManager.Users.Include(x => x.CvUpload).FirstOrDefaultAsync(x => x.Id == userId);
+            var res = false;
+            try
+            {
+                var user = await _userManager.Users.Include(x => x.CvUpload).FirstOrDefaultAsync(x => x.Id == userId);
 
-            var photo = _mapper.Map<CvUpload>(model);
-            photo.AppUserId = userId;
-            var userToUpdate = await _userManager.FindByIdAsync(userId);
-            userToUpdate.CvUploadId = photo.Id;
-            //photo.AppUser = this.
+                var photo = _mapper.Map<CvUpload>(model);
+                photo.AppUserId = userId;
+                var userToUpdate = await _userManager.FindByIdAsync(userId);
+                userToUpdate.CvUploadId = photo.Id;
+                //photo.AppUser = this.
 
-           
-            // add photo to database
-            var res = await _cvRepo.Add(photo);
-            if(res.Equals(true))
-                await _userManager.UpdateAsync(userToUpdate);
 
-            return new Tuple<bool, UploadDto>(res, model);
+                // add photo to database
+                res = await _cvRepo.Add(photo);
+                if (res.Equals(true))
+                    await _userManager.UpdateAsync(userToUpdate);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+             return new Tuple<bool, UploadDto>(res, model);
         }
 
         public async Task<bool> DeletePhotoAsync(string PublicId)
         {
-            DeletionParams destroyParams = new DeletionParams(PublicId)
-            {
-                ResourceType = ResourceType.Image
-            };
-
-            DeletionResult destroyResult = _cloudinary.Destroy(destroyParams);
-
-            if (destroyResult.StatusCode.ToString().Equals("OK"))
-            {
-                var photo = await _cvRepo.GetCvByPublicId(PublicId);
-                if (photo != null)
+                DeletionParams destroyParams = new DeletionParams(PublicId)
                 {
-                    var res = await _cvRepo.Delete(photo);
-                    if (res)
-                        return true;
-                }
-            }
+                    ResourceType = ResourceType.Image
+                };
 
-            return false;
+                DeletionResult destroyResult = _cloudinary.Destroy(destroyParams);
+            try
+            {
+
+                if (destroyResult.StatusCode.ToString().Equals("OK"))
+                {
+                    var photo = await _cvRepo.GetCvByPublicId(PublicId);
+                    if (photo != null)
+                    {
+                        var res = await _cvRepo.Delete(photo);
+                        if (res)
+                            return true;
+                    }
+                }
+
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+                return false;
         }
 
         public async Task<CvUpload> GetUserPhotosAsync(string userId)
         {
-            var res = await _cvRepo.GetUpload(userId);
-            if (res != null)
-                return res;
+            try
+            {
+                var res = await _cvRepo.GetUpload(userId);
+                if (res != null)
+                    return res;
 
-            return null;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+              return null;
         }
 
         public async Task<Tuple<bool, UploadDto>> UploadCvAsync(UploadDto model, string userId)
@@ -98,14 +120,20 @@ namespace JobWebApi.AppCores.Implementations
                 
                 uploadResult = await _cloudinary.UploadAsync(imageUploadParams);
             }
-
-            var status = uploadResult.StatusCode.ToString();
-
-            if (status.Equals("OK"))
+            try
             {
-                model.PublicId = uploadResult.PublicId;
-                model.Url = uploadResult.Url.ToString();
-                return new Tuple<bool, UploadDto>(true, model);
+                var status = uploadResult.StatusCode.ToString();
+
+                if (status.Equals("OK"))
+                {
+                    model.PublicId = uploadResult.PublicId;
+                    model.Url = uploadResult.Url.ToString();
+                    return new Tuple<bool, UploadDto>(true, model);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
 
             return new Tuple<bool, UploadDto>(false, model);

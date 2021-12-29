@@ -1,7 +1,9 @@
-﻿using JobWebApi.AppCores.Interfaces;
+﻿using AutoMapper;
+using JobWebApi.AppCores.Interfaces;
 using JobWebApi.AppDataAccess.Repository.Interfaces;
 using JobWebApi.AppModels.DTOs;
 using JobWebApi.AppModels.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,44 +12,155 @@ namespace JobWebApi.AppCores.Implementations
     public class IndustryServices : IIndustryService
     {
         private readonly IIndustryRepository _industryRepo;
+        private readonly IMapper _mapper;
 
-        public IndustryServices(IIndustryRepository industryRepository)
+        public IndustryServices(IIndustryRepository industryRepository, IMapper mapper)
         {
             _industryRepo = industryRepository;
+            _mapper = mapper;
         }
-        public Task<bool> AddIndustry(IndustryDto industry)
+        public async Task<IndustryReturnedDto> AddIndustry(IndustryDto industry)
         {
-            throw new System.NotImplementedException();
+            var check = await _industryRepo.GetIndustryByName(industry.Name);
+            //var res = false;
+            if (check == null)
+            {
+
+                var newIndustry= _mapper.Map<Industry>(industry);
+                try
+                {
+                    var addIndustry = await _industryRepo.Add(newIndustry);
+                    if (addIndustry.Equals(true))
+                    {
+                        return _mapper.Map<IndustryReturnedDto>(newIndustry);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+                
+
+            }
+            return null;
         }
 
-        public Task<List<Industry>> GetAllIndustry()
+        public async Task<List<IndustryReturnedDto>> GetAllIndustry()
         {
-            throw new System.NotImplementedException();
+            var listofIndustry = new List<IndustryReturnedDto>();
+            try
+            {
+                var res = await _industryRepo.GetAll();
+                foreach (var item in res)
+                {
+                    listofIndustry.Add(_mapper.Map<IndustryReturnedDto>(item));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return listofIndustry;
         }
 
-        public Task<List<Industry>> GetCategories(string name)
+        public async Task<List<IndustryReturnedDto>> GetIndustries(string name)
         {
-            throw new System.NotImplementedException();
+            var listofIndustry = new List<IndustryReturnedDto>();
+            try
+            {
+                var res = await _industryRepo.GetIndustries(name);
+                foreach (var item in res)
+                {
+                    listofIndustry.Add(_mapper.Map<IndustryReturnedDto>(item));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return listofIndustry;
         }
 
-        public Task<Industry> GetIndustryById(string id)
+        public async Task<IndustryReturnedDto> GetIndustryById(string id)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                var res = await _industryRepo.GetIndustryById(id);
+                if (res != null)
+                {
+                    return _mapper.Map<IndustryReturnedDto>(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return null;
         }
 
-        public Task<Industry> GetIndustryByName(string name)
+        public async Task<IndustryReturnedDto> GetIndustryByName(string name)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                var res = await _industryRepo.GetIndustryByName(name);
+                if (res != null)
+                {
+                    return _mapper.Map<IndustryReturnedDto>(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return null;
         }
 
-        public Task<bool> RemoveIndustry(string id)
+        public async Task<bool> RemoveIndustry(string id)
         {
-            throw new System.NotImplementedException();
+            var industry = await _industryRepo.GetIndustryById(id);
+            if (industry != null)
+            {
+                try
+                {
+                    var res = await _industryRepo.Delete(industry);
+                    if (res.Equals(true))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            }
+            return false;
         }
 
-        public Task<bool> UpdateIndustry(string id, IndustryDto industry)
+        public async Task<bool> UpdateIndustry(string id, IndustryDto industry)
         {
-            throw new System.NotImplementedException();
+            var result = await _industryRepo.GetIndustryById(id);
+            var success = false;
+            if (result != null)
+            {
+                var updatedindustry = _mapper.Map<Industry>(industry);
+                updatedindustry.Id = id;
+                try
+                {
+                    var res = await _industryRepo.Update(updatedindustry);
+                    if (res.Equals(true))
+                    {
+                        success = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+                return success;
+
+
+            }
+            return success;
         }
     }
 }
