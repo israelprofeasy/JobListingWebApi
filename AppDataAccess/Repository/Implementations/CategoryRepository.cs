@@ -36,8 +36,8 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
         public async Task<Category> GetCategoryById(string id)
         {
             var res = await _ctx.Category.Where(x => x.Id == id).FirstOrDefaultAsync();
-           if(res != null)
-            _ctx.Entry(res).State = EntityState.Detached;
+           //if(res != null)
+           // _ctx.Entry(res).State = EntityState.Detached;
             return res;
         }
 

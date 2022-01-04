@@ -14,11 +14,11 @@ namespace JobWebApi.AppCores.Implementations
     {
         private readonly IJobApplicationRepo _jobApplicationRepo;
         private readonly IJobRepository _jobRepository;
-        private readonly ICVUpload _cVUpload;
+        private readonly IUploadService _cVUpload;
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
 
-        public ApplicationServices(IJobApplicationRepo jobApplicationRepo, IJobRepository jobRepository, ICVUpload cVUpload, IMapper mapper, UserManager<AppUser> userManager)
+        public ApplicationServices(IJobApplicationRepo jobApplicationRepo, IJobRepository jobRepository, IUploadService cVUpload, IMapper mapper, UserManager<AppUser> userManager)
         {
             _jobApplicationRepo = jobApplicationRepo;
             _jobRepository = jobRepository;
@@ -37,7 +37,7 @@ namespace JobWebApi.AppCores.Implementations
             {
                 return new ApplicationResponseDto { Success = false, Report = "Job Advert is already closed" };
             }
-            var checkCv = _cVUpload.GetUpload(userId);
+            var checkCv = _cVUpload.GetUserPhotosAsync(userId);
             if (checkCv == null)
             {
                 return new ApplicationResponseDto { Success = false, Report = "You need to upload your Cv to you dashboard" };

@@ -379,7 +379,27 @@ namespace JobWebApi.Controllers
             ModelState.AddModelError("Invalid", "File size must be a .pdf file");
             return BadRequest(Utilities.BuildResponse<ImageUploadResult>(false, "File is not a pdf file", ModelState, null));
         }
-        [HttpGet("request-deactivation")]
+        [HttpDelete("delete-upload-cv")]
+        public async Task<IActionResult> DeleteUploadCv(string userId, string publicId)
+        {
+            ClaimsPrincipal currentUser = this.User;
+            var currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            if (!userId.Equals(currentUserId))
+            {
+                ModelState.AddModelError("Denied", $"You are not allowed to upload photo for another user");
+                var result2 = Utilities.BuildResponse<string>(false, "Access denied!", ModelState, "");
+                return BadRequest(result2);
+            }
+            var deleteCv = await _uploadService.DeletePhotoAsync(publicId);
+            if (deleteCv)
+            {
+                return Ok(Utilities.BuildResponse(true, "Cv successfully deleted", null, ""));
+            }
+            ModelState.AddModelError("Invalid", "Incorrect public id");
+            return BadRequest(Utilities.BuildResponse(false,"Insert the correct public Id",ModelState, ""));
+
+        }
+            [HttpGet("request-deactivation")]
         public IActionResult RequestDeactivation()
         {
             return Ok();

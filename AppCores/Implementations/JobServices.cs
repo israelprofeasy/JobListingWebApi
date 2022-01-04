@@ -261,7 +261,8 @@ namespace JobWebApi.AppCores.Implementations
             {
                 try
                 {
-                    var res = await _jobRepo.Delete(job);
+                  
+                    var res = await _jobRepo.Delete(job); //_jobRepo.Delete(job);
                     if (res)
                     {
                         return true;

@@ -41,8 +41,8 @@ namespace JobWebApi.AppDataAccess.Repository.Implementations
         public async Task<Industry> GetIndustryById(string id)
         {
             var res = await _ctx.Industry.Where(x => x.Id == id).FirstOrDefaultAsync();
-            if (res != null)
-                _ctx.Entry(res).State = EntityState.Detached;
+            //if (res != null)
+            //    _ctx.Entry(res).State = EntityState.Detached;
             return res;
         }
 
