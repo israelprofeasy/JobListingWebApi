@@ -7,6 +7,7 @@ using JobWebApi.AppModels.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,29 +15,37 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace JobWebApi.Controllers
 {
-
+    [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    
     public class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;
         private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUploadService _uploadService;
+        private readonly IMailService _mailService;
 
-        public UserController(ILogger<UserController> logger, UserManager<AppUser> userManager, IMapper mapper, IUploadService uploadService)
+        public UserController(ILogger<UserController> logger,
+            UserManager<AppUser> userManager, IMapper mapper,
+            RoleManager<IdentityRole> roleManager,
+            IUploadService uploadService, IMailService mailService)
         {
             _logger = logger;
             _userManager = userManager;
             _mapper = mapper;
+            _roleManager = roleManager;
             _uploadService = uploadService;
+            _mailService = mailService;
         }
-        [HttpPost("add-user")]
         [AllowAnonymous]
+        [HttpPost("add-user")]
         public async Task<IActionResult> AddUser(RegisterDto model)
         {
 
@@ -48,7 +57,7 @@ namespace JobWebApi.Controllers
             }
             var user = _mapper.Map<AppUser>(model);
             user.IsActive = true;
-             var response = await _userManager.CreateAsync(user, model.Password);
+            var response = await _userManager.CreateAsync(user, model.Password);
 
             if (!response.Succeeded)
             {
@@ -73,6 +82,21 @@ namespace JobWebApi.Controllers
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var url = Url.Action("ConfrimEmail", "User", new { Email = user.Email, Token = token }, Request.Scheme);
+            await _mailService.SendEmailAsync(
+               new MailRequest
+               {
+
+                   DisplayName = "Job Listing",
+                   ToEmail = user.Email,
+                   Subject = "Email Confirmation",
+                   Body = $"<h1>Welcome to Job Listing</h1> <p>Please confirm your email" +
+                            $" by <a href= '{url}'>Clicking here</a></p><br><br>" +
+                            $"<p> If the above link does not work then copy the link below and paste on your browser</p>" +
+                            $"<p>{url}</p>",
+
+
+
+               });
 
 
             var details = _mapper.Map<RegisterSuccessDto>(user);
@@ -80,8 +104,8 @@ namespace JobWebApi.Controllers
 
             return Ok(Utilities.BuildResponse(true, "New user added!", null, new { details, ConfimationLink = url }));
         }
-        [HttpGet("confirm-email")]
         [AllowAnonymous]
+        [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfrimEmail(string email, string token)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
@@ -109,7 +133,7 @@ namespace JobWebApi.Controllers
 
             return Ok(Utilities.BuildResponse<object>(true, "Email confirmation suceeded!", null, null));
         }
-
+        [Authorize]
         [HttpPut("edit-user")]
         public async Task<IActionResult> EditUser(string id, UserToUpdateDto model)
         {
@@ -136,6 +160,7 @@ namespace JobWebApi.Controllers
             return BadRequest(res);
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("delete-user")]
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -161,6 +186,7 @@ namespace JobWebApi.Controllers
                 return BadRequest(res);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllUsers(int page, int perPage)
         {
@@ -168,7 +194,7 @@ namespace JobWebApi.Controllers
             var listOfUsersToReturn = new List<UserToReturnDto>();
 
             //var users = _userService.Users;
-            var users =await _userManager.Users.ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
 
             if (users != null)
             {
@@ -194,6 +220,7 @@ namespace JobWebApi.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-active-users")]
         public async Task<IActionResult> GetActiveUsers(int page, int perPage)
         {
@@ -208,7 +235,7 @@ namespace JobWebApi.Controllers
                 var pagedList = PageList<AppUser>.Paginate(users, page, perPage);
                 foreach (var user in pagedList.Data)
                 {
-                    if(user.IsActive == true)
+                    if (user.IsActive == true)
                         listOfUsersToReturn.Add(_mapper.Map<UserToReturnDto>(user));
                 }
 
@@ -228,6 +255,7 @@ namespace JobWebApi.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-user-byId")]
         public async Task<IActionResult> GetUserById(string id)
         {
@@ -235,7 +263,7 @@ namespace JobWebApi.Controllers
             var UserToReturn = new UserDetailReturnedDto();
             //var user = await _userService.GetUser(email);
             var user = await _userManager.Users.Where(x => x.Id == id).Include(x => x.CvUpload).FirstOrDefaultAsync();//FindByIdAsync(id);
-            
+
             if (user != null)
             {
                 UserToReturn = _mapper.Map<UserDetailReturnedDto>(user);
@@ -250,13 +278,14 @@ namespace JobWebApi.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-users-byname")]
         public async Task<IActionResult> GetUsersByName(string name)
         {
             // map data from db to dto to reshape it and remove null fields
             var UserToReturn = new List<UserToReturnDto>();
             //var user = await _userService.GetUser(email);
-            var users =  await _userManager.Users.Where(x => x.FirstName == name || x.LastName == name).ToListAsync();
+            var users = await _userManager.Users.Where(x => x.FirstName == name || x.LastName == name).ToListAsync();
             if (users != null)
             {
                 foreach (var user in users)
@@ -274,6 +303,7 @@ namespace JobWebApi.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-user-byemail")]
         public async Task<IActionResult> GetUserByEmailAsync(string email)
         {
@@ -296,13 +326,14 @@ namespace JobWebApi.Controllers
             }
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("deactivate-user")]
         public async Task<IActionResult> DeactivateUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             user.IsActive = false;
             var res = await _userManager.UpdateAsync(user);
-            if(res.Succeeded)
+            if (res.Succeeded)
             {
                 var response = Utilities.BuildResponse(true, "User has been successfully deactivated!", null, res);
                 return Ok(res);
@@ -314,6 +345,7 @@ namespace JobWebApi.Controllers
                 return BadRequest(res);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("activate-user")]
         public async Task<IActionResult> ActivateUser(string id)
         {
@@ -332,6 +364,7 @@ namespace JobWebApi.Controllers
                 return BadRequest(res);
             }
         }
+        [Authorize]
         [HttpPost("upload-cv")]
         public async Task<IActionResult> UploadCv([FromForm] UploadDto model, string userId)
         {
@@ -344,7 +377,7 @@ namespace JobWebApi.Controllers
                 var result2 = Utilities.BuildResponse<string>(false, "Access denied!", ModelState, "");
                 return BadRequest(result2);
             }
-           // var ext = Path.GetExtension(model.Photo.FileName).Substring(1);
+            // var ext = Path.GetExtension(model.Photo.FileName).Substring(1);
             if (model.Photo.FileName.Contains(".pdf"))
             {
 
@@ -352,7 +385,7 @@ namespace JobWebApi.Controllers
 
                 if (file.Length > 0)
                 {
-                  
+
                     var uploadStatus = await _uploadService.UploadCvAsync(model, userId);
 
                     if (uploadStatus.Item1)
@@ -379,6 +412,7 @@ namespace JobWebApi.Controllers
             ModelState.AddModelError("Invalid", "File size must be a .pdf file");
             return BadRequest(Utilities.BuildResponse<ImageUploadResult>(false, "File is not a pdf file", ModelState, null));
         }
+        [Authorize]
         [HttpDelete("delete-upload-cv")]
         public async Task<IActionResult> DeleteUploadCv(string userId, string publicId)
         {
@@ -396,13 +430,158 @@ namespace JobWebApi.Controllers
                 return Ok(Utilities.BuildResponse(true, "Cv successfully deleted", null, ""));
             }
             ModelState.AddModelError("Invalid", "Incorrect public id");
-            return BadRequest(Utilities.BuildResponse(false,"Insert the correct public Id",ModelState, ""));
+            return BadRequest(Utilities.BuildResponse(false, "Insert the correct public Id", ModelState, ""));
 
         }
-            [HttpGet("request-deactivation")]
+        [Authorize]
+        [HttpGet("request-deactivation")]
         public IActionResult RequestDeactivation()
         {
             return Ok();
         }
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto model)
+        {
+
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null && await _userManager.IsEmailConfirmedAsync(user))
+                {
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                    var url = Url.Action("ResetPassword", "User", new { email = model.Email, token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token)) }, Request.Scheme);
+
+                    string confirmationMessage = $"<p>Hi {user.FirstName},</p>" +
+                    $"<p>We understand you have a lot going on on your mind, feel free to reset your password. <a href='{url}'>Click here to reset password.</a></p><br/>" +
+                    $"<p>Best regards,<br/>Merlin</p>" +
+                    $"<p>Can't see the link for resetting your password? Here it is:</p>" +
+                    $"<p><a href='{url}'>{url}</a></p>" +
+                    $"<p><b>Note:</b> You are receiving this email because it's important and it's not something that you can unsubscribe from.</p>";
+
+                    var message = new MailRequest { DisplayName = user.FirstName, Subject = "Forgot Password", Body = confirmationMessage, ToEmail = model.Email };
+
+                    await _mailService.SendEmailAsync(message);
+
+                    // the confirmation link is added to this response object for testing purpose since at this point it is not being sent via mail
+                    return Ok(Utilities.BuildResponse(true, "Password reset link sent!", null, new { PaswordResetLink = url }));
+                }
+
+                ModelState.AddModelError("Invalid", $"User with email: {model.Email} does not exists");
+                return NotFound(Utilities.BuildResponse<object>(false, "User not found!", ModelState, null));
+            }
+
+            ModelState.AddModelError("Failed", "Invalid payload");
+            return BadRequest(Utilities.BuildResponse<string>(false, "Unable to reset password", ModelState, ""));
+        }
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+        {
+            if (model.Token == null || model.Email == null)
+            {
+                ModelState.AddModelError("", "Invalid password reset token");
+                return BadRequest(Utilities.BuildResponse<string>(false, "Unable to reset password", ModelState, ""));
+            }
+            else
+            {
+                if (ModelState.IsValid)
+                {
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+                    if (user != null)
+                    {
+                        var res = await _userManager.ResetPasswordAsync(user, Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token)), model.Password);
+                        if (!res.Succeeded)
+                        {
+                            foreach (var err in res.Errors)
+                            {
+                                ModelState.AddModelError(err.Code, err.Description);
+                            }
+
+                            return BadRequest(Utilities.BuildResponse<string>(false, "Failed to reset password!", ModelState, null));
+                        }
+
+                       
+
+                        return Ok(Utilities.BuildResponse<object>(true, "Password reset sucessfully!", null, null));
+                    }
+                }
+
+                ModelState.AddModelError("Failed", "Invalid payload");
+                return BadRequest(Utilities.BuildResponse<string>(false, "Unable to reset password", ModelState, ""));
+            }
+        }
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto model)
+        {
+            ClaimsPrincipal currentUser = this.User;
+            string currentUserId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(currentUserId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            IdentityResult res = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+
+            if (!res.Succeeded)
+            {
+                return BadRequest(Utilities.BuildResponse<object>(false, "Failed to change password", ModelState, null));
+            }
+
+           
+            return Ok(Utilities.BuildResponse<object>(true, "Password changed sucessfully!", null, null));
+        }
+        [Authorize(Roles = "Admin")]
+        [Route("assign-role-to-user/{id:guid}/roles")]
+        [HttpPut]
+        public async Task<ActionResult> AssignRolesToUser(string id, [FromBody] string[] rolesToAssign)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("NotFound", $"User with id: {id} was not found");
+                return NotFound(Utilities.BuildResponse<object>(false, "User not found!", ModelState, null));
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+
+            var rolesNotExists = rolesToAssign.Except(_roleManager.Roles.Select(x => x.Name)).ToArray();
+
+            if (rolesNotExists.Count() > 0)
+            {
+                ModelState.AddModelError("NotFound", string.Format("Roles '{0}' does not exixts in the system", string.Join(",", rolesNotExists)));
+                return NotFound(Utilities.BuildResponse<object>(false, "User not found!", ModelState, null));
+            }
+
+            IdentityResult removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles.ToArray());
+
+            if (!removeResult.Succeeded)
+            {
+                foreach (var err in removeResult.Errors)
+                {
+                    ModelState.AddModelError(err.Code, err.Description);
+                }
+                return BadRequest(Utilities.BuildResponse<object>(false, "Failed to remove user roles", ModelState, null));
+            }
+
+            IdentityResult addResult = await _userManager.AddToRolesAsync(user, rolesToAssign);
+
+            if (!addResult.Succeeded)
+            {
+                foreach (var err in removeResult.Errors)
+                {
+                    ModelState.AddModelError(err.Code, err.Description);
+                }
+                return BadRequest(Utilities.BuildResponse<object>(false, "Failed to add user roles", ModelState, null));
+            }
+
+          
+            return Ok(Utilities.BuildResponse<object>(true, "User roles added successfully!", null, null));
+        }
+
     }
 }

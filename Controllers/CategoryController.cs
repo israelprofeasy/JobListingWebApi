@@ -3,14 +3,15 @@ using JobWebApi.AppCommons;
 using JobWebApi.AppCores.Interfaces;
 using JobWebApi.AppModels.DTOs;
 using JobWebApi.AppModels.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace JobWebApi.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _category;
@@ -21,6 +22,7 @@ namespace JobWebApi.Controllers
             _category = category;
             
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost("add-category")]
         public async Task<IActionResult> Add(CategoryDto model)
         {
@@ -33,6 +35,7 @@ namespace JobWebApi.Controllers
             return BadRequest(Utilities.BuildResponse<object>(false, "Name already exist", ModelState, null));
             
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("delete-category")]
         public async Task<IActionResult> DeleteCategory(string id)
         {
@@ -44,6 +47,7 @@ namespace JobWebApi.Controllers
             ModelState.AddModelError("Invalid", "Category Id does not exist!");
             return BadRequest(Utilities.BuildResponse<object>(false, "Enter a valid category Id", ModelState, null));
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("edit-category")]
         public async Task<IActionResult> EditCategory(string id, CategoryDto model)
         {

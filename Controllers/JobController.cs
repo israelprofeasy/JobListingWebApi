@@ -2,6 +2,7 @@
 using JobWebApi.AppCores.Interfaces;
 using JobWebApi.AppModels.DTOs;
 using JobWebApi.AppModels.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -9,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace JobWebApi.Controllers
 {
-    [ApiController]
     [Route("[controller]")]
+    [ApiController]
     public class JobController : ControllerBase
     {
         private readonly IJobServices _jobService;
@@ -23,7 +24,7 @@ namespace JobWebApi.Controllers
             _categoryService = categoryService;
             _industryService = industryService;
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPost("Add-Job")]
         public async Task<IActionResult> AddJob(JobDetailDto model)
         {
@@ -43,6 +44,7 @@ namespace JobWebApi.Controllers
             return BadRequest(Utilities.BuildResponse<object>(false, "Add a new Job", ModelState, null));
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("Delete-Job")]
         public async Task<IActionResult> DeleteJob(string id)
         {
@@ -56,6 +58,7 @@ namespace JobWebApi.Controllers
             return BadRequest(Utilities.BuildResponse<object>(false, "Enter a valid job Id", ModelState, null));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("Edit-Job")]
         public async Task<IActionResult> EditJob(string id, JobDetailDto model)
         {

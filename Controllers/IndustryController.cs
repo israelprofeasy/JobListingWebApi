@@ -2,14 +2,15 @@
 using JobWebApi.AppCores.Interfaces;
 using JobWebApi.AppModels.DTOs;
 using JobWebApi.AppModels.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace JobWebApi.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class IndustryController : ControllerBase
     {
         private readonly IIndustryService _industry;
@@ -18,6 +19,7 @@ namespace JobWebApi.Controllers
         {
             _industry = idustry;
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost("add-industry")]
         public async Task<IActionResult> Add(IndustryDto model)
         {
@@ -30,6 +32,7 @@ namespace JobWebApi.Controllers
             return BadRequest(Utilities.BuildResponse<object>(false, "Name already exist", ModelState, null));
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("delete-industry")]
         public async Task<IActionResult> DeleteIndustry(string id)
         {
@@ -41,6 +44,7 @@ namespace JobWebApi.Controllers
             ModelState.AddModelError("Invalid", "Industry Id does not exist!");
             return BadRequest(Utilities.BuildResponse<object>(false, "Enter a valid Industry Id", ModelState, null));
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("edit-industry")]
         public async Task<IActionResult> EditIndustry(string id, IndustryDto model)
         {

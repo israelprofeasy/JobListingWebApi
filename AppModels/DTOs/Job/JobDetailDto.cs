@@ -7,12 +7,12 @@ namespace JobWebApi.AppModels.DTOs
     {
 
         [Required]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]
+        [StringLength(70, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 700 characters")]
         [Display(Name = "Job Title")]
         public string JobTitle { get; set; }
 
         [Required]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]
+        [StringLength(70, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 70 characters")]
         public string Company { get; set; }
 
         [Required]
@@ -42,11 +42,13 @@ namespace JobWebApi.AppModels.DTOs
         public int JobValidDays { get; set; }
 
         [Required]
+        [DataType(DataType.Currency)]
         [Display(Name = "Minimum Salary")]
 
         public decimal MinimumSalary { get; set; }
 
         [Required]
+        [DataType(DataType.Currency)]
         [Display(Name = "Minimum Salary")]
         public decimal MaximumSalary { get; set; }
 

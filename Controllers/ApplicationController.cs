@@ -1,6 +1,9 @@
 ﻿using JobWebApi.AppCommons;
 using JobWebApi.AppCores.Interfaces;
 using JobWebApi.AppModels.DTOs;
+using JobWebApi.AppModels.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -13,11 +16,14 @@ namespace JobWebApi.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly IApplication _application;
+        private readonly UserManager<AppUser> _userManager;
 
-        public ApplicationController(IApplication application)
+        public ApplicationController(IApplication application, UserManager<AppUser> userManager)
         {
             _application = application;
+            _userManager = userManager;
         }
+        [Authorize]
         [HttpPost("apply-job")]
         public async Task<IActionResult> ApplyForJob(string userId, string jobId)
         {
@@ -39,9 +45,24 @@ namespace JobWebApi.Controllers
             }
             return BadRequest();
         }
+        [Authorize]
         [HttpGet("jobs-applied-for")]
         public async Task<IActionResult> GetJobsAppliedFor(string userId, int page, int perPage)
         {
+            var user = await _userManager.FindByIdAsync(userId);
+            var roleAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            if (!roleAdmin)
+            {
+                ClaimsPrincipal currentUser = this.User;
+                var currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+                if (!userId.Equals(currentUserId))
+                {
+                    ModelState.AddModelError("Denied", $"You are not allowed to apply job for another user");
+                    var result2 = Utilities.BuildResponse<string>(false, "Access denied!", ModelState, "");
+                    return BadRequest(result2);
+                }
+            }
+
             var jobs = await _application.UserApplications(userId);
             if (jobs != null)
             {
@@ -61,6 +82,7 @@ namespace JobWebApi.Controllers
                 return NotFound(res);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("job-applications")]
         public async Task<IActionResult> GetJobApplications(string jobId, int page, int perPage)
         {

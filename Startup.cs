@@ -114,6 +114,10 @@ namespace JobWebApi
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IIndustryService, IndustryServices>();
             services.AddScoped<IApplication, ApplicationServices>();
+            services.AddTransient<IMailService, MailService>();
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+
+           
 
 
         }

@@ -6,7 +6,7 @@ namespace JobWebApi.AppModels.DTOs
     {
 
         [Required]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 20 characters")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Name must not be less than 3 characters and not more than 50 characters")]
         public string Name { get; set; }
     }
 }
