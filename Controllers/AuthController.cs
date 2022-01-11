@@ -23,7 +23,7 @@ namespace JobWebApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO model)
+        public async Task<IActionResult> Login([FromForm]LoginDTO model)
         {
 
             var user = await _userMgr.FindByEmailAsync(model.email);
