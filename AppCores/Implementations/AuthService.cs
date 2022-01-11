@@ -23,27 +23,37 @@ namespace JobWebApi.AppCores.Implementations
         public async Task<LoginCredDto> Login(string email, string password, bool rememberMe)
         {
             var user = await _userManager.FindByEmailAsync(email);
+            var isCorrect = await _userManager.CheckPasswordAsync(user, password);
             var token = "";
-
-            try
+            var response = new LoginCredDto { status = false };
+            if (user != null &&  isCorrect==true)     
             {
-               var res = await _signinManager.PasswordSignInAsync(user, password, rememberMe, false);
-
-                if (!res.Succeeded)
+                try
                 {
-                    return new LoginCredDto { status = false };
+                    var res = await _signinManager.PasswordSignInAsync(user, password, rememberMe, false);
+
+                    if (!res.Succeeded)
+                    {
+                        return response;
+                    }
+
+                    // get jwt token
+                    var userRoles = await _userManager.GetRolesAsync(user);
+                    token = _jWTService.GenerateToken(user, userRoles.ToList());
+                    response.status = true; 
+                    response.Id = user.Id; 
+                    response.token = token;
+                    
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
                 }
 
-                // get jwt token
-                var userRoles = await _userManager.GetRolesAsync(user);
-                token = _jWTService.GenerateToken(user, userRoles.ToList());
-            }
-            catch(Exception ex)
-            {
-                throw new Exception(ex.Message);
+                return response;
             }
 
-            return new LoginCredDto { status = true, Id = user.Id, token = token };
+           return response;
         }
     }
 }
